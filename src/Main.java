@@ -10,33 +10,52 @@ import static java.util.Collections.max;
 public class Main {
 
     public static void main(String[] args) {
-        final ConsoleView consoleView = new ConsoleView();
         final List<Integer> polynomial1 = Arrays.asList(0);
         final List<Integer> polynomial2 = Arrays.asList(0, 2);
+
+        final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
+
+//        smallTest(Arrays.asList(0), Arrays.asList(0, 2), memoryLength);
+        bigTest(Arrays.asList(0), Arrays.asList(0, 2), memoryLength, 1000000, 100, false);
+    }
+
+    public static void smallTest(
+            final List<Integer> polynomial1,
+            final List<Integer> polynomial2,
+            final int memoryLength
+    ) {
+        final ConsoleView consoleView = new ConsoleView();
+        final Coder coder = new Coder(polynomial1, polynomial2, memoryLength);
 
         if (polynomial1.size() > 1) {
             System.out.println("Error: polynomial 1 max degree is not 0");
             return;
         }
 
-        final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
-        final Coder coder = new Coder(polynomial1, polynomial2, memoryLength);
-
         consoleView.print(coder.getStatesMap(), memoryLength);
 
-//        String res = coder.encode(Arrays.asList(1, 0, 1, 0, 1), memoryLength);
-////		String res = coder.encode(Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1), memoryLength);
-//        System.out.println(res);
-
-        runTest(1000000, 100);
+        final List<List<Integer>> result = coder.encode(Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1), memoryLength);
+        System.out.println(result);
     }
 
-    public static void runTest(final int iterations, final int codeLength) {
-        final List<Integer> polynomial1 = Arrays.asList(0);
-        final List<Integer> polynomial2 = Arrays.asList(0, 1);
-        final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
+    public static void bigTest(
+            final List<Integer> polynomial1,
+            final List<Integer> polynomial2,
+            final int memoryLength,
+            final int iterations,
+            final int codeLength,
+            final boolean visualize
+    ) {
+        final ConsoleView consoleView = new ConsoleView();
         final Coder coder = new Coder(polynomial1, polynomial2, memoryLength);
         List<Integer> list;
+
+        if (polynomial1.size() > 1) {
+            System.out.println("Error: polynomial 1 max degree is not 0");
+            return;
+        }
+
+        consoleView.print(coder.getStatesMap(), memoryLength);
 
         final double start = System.currentTimeMillis();
 
@@ -47,13 +66,19 @@ public class Main {
                 list.add((int) Math.round(Math.random()));
             }
 
-//            System.out.print("Seq: ");
-//            System.out.println(list);
-//            System.out.print("Coded: ");
-            String res = coder.encode(list, memoryLength);
-//            System.out.println(res);
-//            System.out.println();
-//            System.out.println();
+            if (visualize) {
+                System.out.print("Seq: ");
+                System.out.println(list);
+                System.out.print("Coded: ");
+            }
+
+            List<List<Integer>> res = coder.encode(list, memoryLength);
+
+            if (visualize) {
+                System.out.println(res);
+                System.out.println();
+                System.out.println();
+            }
         }
 
         final double stop = System.currentTimeMillis();

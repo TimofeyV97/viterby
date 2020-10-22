@@ -4,13 +4,15 @@ import java.util.*;
 
 public class Coder {
 
-    private final Map<Integer, Map<Integer, String>> statesMap;
+    private static final int BITS_OUT = 2;
+
+    private final Map<Integer, Map<Integer, List<Integer>>> statesMap;
 
     public Coder(final List<Integer> polynomial1, final List<Integer> polynomial2, int memoryLength) {
         statesMap = new HashMap<>();
 
         for (int i = 0; i < Math.pow(2, memoryLength); i++) {
-            final Map<Integer, String> values = new HashMap<>();
+            final Map<Integer, List<Integer>> values = new HashMap<>();
 
             values.put(0, countPolynomial(polynomial1, polynomial2, memoryLength, i, 0));
             values.put(1, countPolynomial(polynomial1, polynomial2, memoryLength, i, 1));
@@ -19,64 +21,67 @@ public class Coder {
         }
     }
 
-    public Map<Integer, Map<Integer, String>> getStatesMap() {
+    public Map<Integer, Map<Integer, List<Integer>>> getStatesMap() {
         return statesMap;
     }
 
-    public String encode(final List<Integer> codeSequence, final int memoryLength) {
-        final StringBuilder result = new StringBuilder();
+    public List<List<Integer>> encode(final List<Integer> codeSequence, final int memoryLength) {
+        final List<List<Integer>> result = new ArrayList<>();
         // init memory with 0
         int memory = 0;
 
         // encode
         for (final int bit : codeSequence) {
-            result.append(encodeBit(bit, memory));
+            result.add(statesMap.get(memory).get(bit));
             memory = shiftMemory(bit, memory, memoryLength);
         }
 
         // clear memory
         for (int i = 0; i < memoryLength; i++) {
-            result.append(encodeBit(0, memory));
+            result.add(statesMap.get(memory).get(0));
             memory = shiftMemory(0, memory, memoryLength);
         }
 
-        return result.toString();
+        return result;
     }
 
-    public void decode() {
+    public void decode(final List<Integer> codeSequence) {
 
     }
 
-    private String encodeBit(final int bit, int memory) {
-        final StringBuilder result = new StringBuilder();
-        final String word = statesMap.get(memory).get(bit);
-
-        result.append(word);
-        result.append(" ");
-
-        return result.toString();
-    }
-
-    private String countPolynomial(
+    private List<Integer> countPolynomial(
             final List<Integer> polynomial1,
             final List<Integer> polynomial2,
             int memoryLength,
             int memory,
             int incomingBit
     ) {
-        final StringBuilder result = new StringBuilder();
+        final List<Integer> result = new ArrayList<>();
         final int firstPolynomialDegree = polynomial1.get(0);
         int sum = 0;
 
-        result.append(firstPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - firstPolynomialDegree));
+        result.add(firstPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - firstPolynomialDegree));
 
         for (final int degree : polynomial2) {
             sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
         }
 
-        result.append(sum);
+        result.add(sum);
 
-        return result.toString();
+        return result;
+    }
+
+    private int calcHammingDistance(final int firstValue, final int secondValue) {
+        int distance = 0;
+
+        // traverse value as binary
+        for (int i = (BITS_OUT - 1); i >= 0; i--) {
+            if (getBit(firstValue, BITS_OUT) != getBit(secondValue, BITS_OUT)) {
+                distance++;
+            }
+        }
+
+        return distance;
     }
 
     private int shiftMemory(final int bit, int memory, final int memoryLength) {

@@ -1,10 +1,11 @@
 package view;
 
+import java.util.List;
 import java.util.Map;
 
 public class ConsoleView {
 
-    public void print(final Map<Integer, Map<Integer, String>> map, final int memoryLength) {
+    public void print(final Map<Integer, Map<Integer, List<Integer>>> map, final int memoryLength) {
         map.forEach((key, value) -> value.forEach((key1, value1) -> {
             System.out.print(
                     String.format("%" + memoryLength + "s", Integer.toBinaryString(key)).replaceAll(" ", "0")
