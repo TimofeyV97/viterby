@@ -20,4 +20,14 @@ public class ConsoleView {
         System.out.println(map);
     }
 
+    public void printAdjMatrix(final int [][] matrix, final int size) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                System.out.printf("%3d", matrix[i][j]);
+            }
+
+            System.out.println();
+        }
+    }
+
 }

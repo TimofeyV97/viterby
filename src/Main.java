@@ -11,12 +11,12 @@ public class Main {
 
     public static void main(String[] args) {
         final List<Integer> polynomial1 = Arrays.asList(0);
-        final List<Integer> polynomial2 = Arrays.asList(0, 2);
+        final List<Integer> polynomial2 = Arrays.asList(0, 1);
 
         final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
 
-//        smallTest(Arrays.asList(0), Arrays.asList(0, 2), memoryLength);
-        bigTest(Arrays.asList(0), Arrays.asList(0, 2), memoryLength, 1000000, 100, false);
+//        smallTest(polynomial1, polynomial2, memoryLength);
+        bigTest(polynomial1, polynomial2, memoryLength, 50, 10, true);
     }
 
     public static void smallTest(
@@ -32,10 +32,22 @@ public class Main {
             return;
         }
 
-        consoleView.print(coder.getStatesMap(), memoryLength);
+        final List<Integer> list = Arrays.asList(0, 1, 0, 1);
+//        final List<Integer> list = Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1);
 
-        final List<List<Integer>> result = coder.encode(Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1), memoryLength);
-        System.out.println(result);
+//        consoleView.print(coder.getStatesMap(), memoryLength);
+
+        System.out.print("Sequence: ");
+        System.out.println(list);
+
+        final List<List<Integer>> encoded = coder.encode(list, memoryLength);
+        System.out.print("Encoded:  ");
+        System.out.println(encoded);
+
+        final List<Integer> decoded = coder.decode(encoded);
+        System.out.print("Decoded:  ");
+        System.out.println(decoded);
+        System.out.println();
     }
 
     public static void bigTest(
@@ -60,6 +72,10 @@ public class Main {
         final double start = System.currentTimeMillis();
 
         for (int i = 0; i < iterations; i++) {
+            if (i % 10000 == 0) {
+                System.out.println(i);
+            }
+
             list = new ArrayList<>();
 
             for (int j = 0; j < codeLength; j++) {
@@ -67,16 +83,18 @@ public class Main {
             }
 
             if (visualize) {
-                System.out.print("Seq: ");
+                System.out.print("Sequence: ");
                 System.out.println(list);
-                System.out.print("Coded: ");
+                System.out.print("Encoded:  ");
             }
 
-            List<List<Integer>> res = coder.encode(list, memoryLength);
+            final List<List<Integer>> encoded = coder.encode(list, memoryLength);
+            final List<Integer> decoded = coder.decode(encoded);
 
             if (visualize) {
-                System.out.println(res);
-                System.out.println();
+                System.out.println(encoded);
+                System.out.print("Decoded:  ");
+                System.out.println(decoded);
                 System.out.println();
             }
         }
