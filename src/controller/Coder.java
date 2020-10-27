@@ -1,6 +1,8 @@
 package controller;
 
 import model.Graph;
+import view.ConsoleView;
+
 import java.util.*;
 
 import static model.Constants.*;
@@ -9,15 +11,16 @@ public class Coder {
 
     private final Map<Integer, Map<Integer, List<Integer>>> statesMap;
 
+    private final ConsoleView consoleView;
+
     public Coder(final List<Integer> polynomial1, final List<Integer> polynomial2, int memoryLength) {
         statesMap = new HashMap<>();
+        consoleView = new ConsoleView();
 
         for (int i = 0; i < Math.pow(2, memoryLength); i++) {
             final Map<Integer, List<Integer>> values = new HashMap<>();
-
             values.put(0, countPolynomial(polynomial1, polynomial2, memoryLength, i, 0));
             values.put(1, countPolynomial(polynomial1, polynomial2, memoryLength, i, 1));
-//            statesMap.put(String.format("%" + memoryLength + "s", Integer.toBinaryString(i)).replaceAll(" ", "0"), values);
             statesMap.put(i, values);
         }
     }
@@ -30,6 +33,8 @@ public class Coder {
         final List<List<Integer>> result = new ArrayList<>();
         // init memory with 0
         int memory = 0;
+
+        consoleView.print(statesMap);
 
         // encode
         for (final int bit : codeSequence) {
@@ -88,7 +93,9 @@ public class Coder {
             index++;
         }
 
-        final int [] path = findShortestPath(0, vertexNum - 1, vertexNum, graph.getAdjMatrix());
+//        consoleView.printAdjMatrix(graph.getAdjMatrix(), vertexNum);
+
+        final int [] path = findShortestPath(0, vertexNum, graph.getAdjMatrix());
         final List<Integer> decoded = new ArrayList<>();
 
         for (int i = 1; i < path.length; i++) {
@@ -100,7 +107,7 @@ public class Coder {
         return decoded;
     }
 
-    private int [] findShortestPath(int start, int end, int vertexNum, int [][] graph) {
+    private int [] findShortestPath(int start, int vertexNum, int [][] graph) {
         final List<Integer> stack = new ArrayList<>();
         boolean [] used = new boolean [vertexNum];
         int [] dist = new int [vertexNum];
@@ -111,7 +118,7 @@ public class Coder {
 
         dist[start] = 0;
 
-        for (;;) {
+        while (true) {
             int v = -1;
 
             for (int nv = 0; nv < vertexNum; nv++) {
@@ -146,9 +153,7 @@ public class Coder {
             }
         }
 
-        end = index;
-
-        for (int v = end; v != -1; v = prev[v]) {
+        for (int v = index; v != -1; v = prev[v]) {
             stack.add(v);
         }
 
@@ -168,19 +173,30 @@ public class Coder {
             int memory,
             int incomingBit
     ) {
-        final List<Integer> result = new ArrayList<>();
+        final List<Integer> output = new ArrayList<>();
         final int firstPolynomialDegree = polynomial1.get(0);
+        final int secondPolynomialDegree = polynomial2.get(0);
         int sum = 0;
 
-        result.add(firstPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - firstPolynomialDegree));
+        if (polynomial1.size() == 1) {
+            output.add(firstPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - firstPolynomialDegree));
 
-        for (final int degree : polynomial2) {
-            sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
+            for (final int degree : polynomial2) {
+                sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
+            }
+
+            output.add(sum);
+        } else if (polynomial2.size() == 1) {
+            for (final int degree : polynomial1) {
+                sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
+            }
+
+            output.add(sum);
+
+            output.add(secondPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - secondPolynomialDegree));
         }
 
-        result.add(sum);
-
-        return result;
+        return output;
     }
 
     private int calcHammingDistance(final List<Integer> firstValue, final List<Integer> secondValue) {

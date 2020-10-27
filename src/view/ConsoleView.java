@@ -16,13 +16,13 @@ public class ConsoleView {
         }));
     }
 
-    public void print(final Map<Integer, Map<Integer, String>> map) {
+    public void print(final Map<Integer, Map<Integer, List<Integer>>> map) {
         System.out.println(map);
     }
 
-    public void printAdjMatrix(final int [][] matrix, final int size) {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+    public void printAdjMatrix(final int [][] matrix, final int vertexNumber) {
+        for (int i = 0; i < vertexNumber; i++) {
+            for (int j = 0; j < vertexNumber; j++) {
                 System.out.printf("%3d", matrix[i][j]);
             }
 

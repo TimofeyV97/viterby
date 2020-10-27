@@ -10,13 +10,13 @@ import static java.util.Collections.max;
 public class Main {
 
     public static void main(String[] args) {
-        final List<Integer> polynomial1 = Arrays.asList(0);
-        final List<Integer> polynomial2 = Arrays.asList(0, 1);
+        final List<Integer> polynomial1 = Arrays.asList(0, 1);
+        final List<Integer> polynomial2 = Arrays.asList(0);
 
         final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
 
-//        smallTest(polynomial1, polynomial2, memoryLength);
-        bigTest(polynomial1, polynomial2, memoryLength, 50, 10, true);
+        smallTest(polynomial1, polynomial2, memoryLength);
+//        bigTest(polynomial1, polynomial2, memoryLength, 10, 10, true);
     }
 
     public static void smallTest(
@@ -27,12 +27,11 @@ public class Main {
         final ConsoleView consoleView = new ConsoleView();
         final Coder coder = new Coder(polynomial1, polynomial2, memoryLength);
 
-        if (polynomial1.size() > 1) {
-            System.out.println("Error: polynomial 1 max degree is not 0");
+        if (!correctPolynomials(polynomial1, polynomial2)) {
             return;
         }
 
-        final List<Integer> list = Arrays.asList(0, 1, 0, 1);
+        final List<Integer> list = Arrays.asList(1, 1, 0, 1, 0, 1);
 //        final List<Integer> list = Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1);
 
 //        consoleView.print(coder.getStatesMap(), memoryLength);
@@ -41,6 +40,10 @@ public class Main {
         System.out.println(list);
 
         final List<List<Integer>> encoded = coder.encode(list, memoryLength);
+        System.out.print("Encoded:  ");
+        System.out.println(encoded);
+
+        encoded.get(2).set(0, 1);
         System.out.print("Encoded:  ");
         System.out.println(encoded);
 
@@ -62,8 +65,7 @@ public class Main {
         final Coder coder = new Coder(polynomial1, polynomial2, memoryLength);
         List<Integer> list;
 
-        if (polynomial1.size() > 1) {
-            System.out.println("Error: polynomial 1 max degree is not 0");
+        if (!correctPolynomials(polynomial1, polynomial2)) {
             return;
         }
 
@@ -102,6 +104,23 @@ public class Main {
         final double stop = System.currentTimeMillis();
 
         System.out.println("Time: " + (stop - start) + " ms");
+    }
+
+    private static boolean correctPolynomials(
+            final List<Integer> polynomial1,
+            final List<Integer> polynomial2
+    ) {
+        if (polynomial1.size() > 1 && polynomial2.size() > 1) {
+            System.out.println("One of polynomials max degree is not 0");
+            return false;
+        }
+
+        if (polynomial1.size() == 1 && polynomial2.size() == 1) {
+            System.out.println("Incorrect polynomials length");
+            return false;
+        }
+
+        return true;
     }
 
 }
