@@ -5,6 +5,7 @@ import view.ConsoleView;
 
 import java.util.*;
 
+import static java.lang.Math.pow;
 import static model.Constants.*;
 
 public class Coder {
@@ -17,7 +18,7 @@ public class Coder {
         statesMap = new HashMap<>();
         consoleView = new ConsoleView();
 
-        for (int i = 0; i < Math.pow(2, memoryLength); i++) {
+        for (int i = 0; i < pow(2, memoryLength); i++) {
             final Map<Integer, List<Integer>> values = new HashMap<>();
             values.put(0, countPolynomial(polynomial1, polynomial2, memoryLength, i, 0));
             values.put(1, countPolynomial(polynomial1, polynomial2, memoryLength, i, 1));
@@ -34,8 +35,6 @@ public class Coder {
         // init memory with 0
         int memory = 0;
 
-        consoleView.print(statesMap);
-
         // encode
         for (final int bit : codeSequence) {
             result.add(new ArrayList<>(statesMap.get(memory).get(bit)));
@@ -51,63 +50,107 @@ public class Coder {
         return result;
     }
 
-    public List<Integer> decode(final List<List<Integer>> codeSequence) {
-        final int vertexNum = (codeSequence.size() * 2) + 2;
-        final Graph graph = new Graph(vertexNum);
+    public List<Integer> decode(final List<List<Integer>> codeSequence, final int memoryLength) {
+        final List<Integer> decoded = new ArrayList<>();
+        final Graph graph;
+        final int vertexNum;
         int index = 0;
 
-        if (codeSequence.size() != 1) {
-            final List<Integer> word = codeSequence.get(0);
-            graph.addVertex("t" + 1 + "_0", 0);
-            graph.addVertex("t" + 1 + "_1", 1);
-            graph.addVertex("t" + 2 + "_0", 0);
-            graph.addVertex("t" + 2 + "_1", 1);
+        if (memoryLength == 1) {
+            vertexNum = (codeSequence.size() * 2) + 2;
+            graph = new Graph(vertexNum);
+            List<Integer> word = codeSequence.get(0);
 
-            int dist_0 = calcHammingDistance(statesMap.get(0).get(0), word);
-            int dist_1 = calcHammingDistance(statesMap.get(0).get(1), word);
+            for (int i = 1; i <= 2; i++) {
+                graph.addVertex("t" + i + "_0", 0);
+                graph.addVertex("t" + i + "_1", 1);
+            }
 
-            graph.addEdge(index, 2, dist_0);
-            graph.addEdge(index, 3,  dist_1);
+            graph.addEdge(index, 2, calcHammingDistance(statesMap.get(0).get(0), word));
+            graph.addEdge(index, 3,  calcHammingDistance(statesMap.get(0).get(1), word));
+            index = 2;
+
+            for (int i = 1; i < codeSequence.size(); i++) {
+                word = codeSequence.get(i);
+
+                graph.addVertex("t" + (i + 2) + "_0", 0);
+                graph.addVertex("t" + (i + 2) + "_1", 1);
+
+                for (int j = 0; j <= 1; j++) {
+                    graph.addEdge(index, (i + 1) * 2, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, (i + 1) * 2 + 1,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+            }
+        } else {
+            vertexNum = (codeSequence.size() * 4) + 4;
+            graph = new Graph(vertexNum);
+            List<Integer> word = codeSequence.get(0);
+
+            for (int i = 1; i <= 3; i++) {
+                graph.addVertex("t" + i + "_0", 0);
+                graph.addVertex("t" + i + "_1", 0);
+                graph.addVertex("t" + i + "_2", 1);
+                graph.addVertex("t" + i + "_3", 1);
+            }
+
+            graph.addEdge(index, 4, calcHammingDistance(statesMap.get(0).get(0), word));
+            graph.addEdge(index, 6,  calcHammingDistance(statesMap.get(0).get(1), word));
+
+            word = codeSequence.get(1);
+            index = 4;
+            graph.addEdge(index, 8, calcHammingDistance(statesMap.get(0).get(0), word));
+            graph.addEdge(index, 10,  calcHammingDistance(statesMap.get(0).get(1), word));
+            index = 6;
+            graph.addEdge(index, 9, calcHammingDistance(statesMap.get(2).get(0), word));
+            graph.addEdge(index, 11,  calcHammingDistance(statesMap.get(2).get(1), word));
+            index = 8;
+
+            for (int i = 2; i < codeSequence.size(); i++) {
+                word = codeSequence.get(i);
+                graph.addVertex("t" + (i + 2) + "_0", 0);
+                graph.addVertex("t" + (i + 2) + "_1", 0);
+                graph.addVertex("t" + (i + 2) + "_2", 1);
+                graph.addVertex("t" + (i + 2) + "_3", 1);
+
+                for (int j = 0; j <= 1; j++) {
+                    graph.addEdge(index, (i + 1) * 4, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, (i + 1) * 4 + 2,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+
+                for (int j = 2; j <= 3; j++) {
+                    graph.addEdge(index, ((i + 1) * 4) + 1, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, ((i + 1) * 4 + 2) + 1,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+            }
         }
 
-        index = 2;
+        final List<Integer> path = findShortestPath(vertexNum, graph.getAdjMatrix(), memoryLength);
+        final Graph.Vertex[] vertexList = graph.getVertexList();
 
-        for (int i = 1; i < codeSequence.size(); i++) {
-            final List<Integer> word = codeSequence.get(i);
-            final int x_coord = (i + 1) * 2;
-            final int x_coord_2 = (i + 1) * 2 + 1;
-
-            graph.addVertex("t" + (i + 2) + "_0", 0);
-            graph.addVertex("t" + (i + 2) + "_1", 1);
-            int dist_0 = calcHammingDistance(statesMap.get(0).get(0), word);
-            int dist_1 = calcHammingDistance(statesMap.get(0).get(1), word);
-
-            graph.addEdge(index, x_coord, dist_0);
-            graph.addEdge(index, x_coord_2,  dist_1);
-            index++;
-
-            int dist_00 = calcHammingDistance(statesMap.get(1).get(0), word);
-            int dist_11 = calcHammingDistance(statesMap.get(1).get(1), word);
-            graph.addEdge(index, x_coord, dist_00);
-            graph.addEdge(index, x_coord_2, dist_11);
-            index++;
-        }
-
-//        consoleView.printAdjMatrix(graph.getAdjMatrix(), vertexNum);
-
-        final int [] path = findShortestPath(0, vertexNum, graph.getAdjMatrix());
-        final List<Integer> decoded = new ArrayList<>();
-
-        for (int i = 1; i < path.length; i++) {
-            Graph.Vertex vertex = graph.getVertexList()[path[i]];
-            int direction = vertex.getDirection();
-            decoded.add(direction);
+        for (int i = path.size() - 2; i >= 0; i--) {
+            final Graph.Vertex vertex = vertexList[path.get(i)];
+            decoded.add(vertex.getDirection());
         }
 
         return decoded;
     }
 
-    private int [] findShortestPath(int start, int vertexNum, int [][] graph) {
+    public List<List<Integer>> noise(final int SNR, final List<List<Integer>>  encoded) {
+        if (SNR <= 0) {
+            return encoded;
+        }
+
+        final List<List<Integer>> noised = new ArrayList<>(encoded);
+        final int ratio = 100 / SNR;
+
+        noised.addAll(encoded);
+        return noised;
+    }
+
+    private List<Integer> findShortestPath(int vertexNum, int [][] graph, final int memoryLength) {
         final List<Integer> stack = new ArrayList<>();
         boolean [] used = new boolean [vertexNum];
         int [] dist = new int [vertexNum];
@@ -116,7 +159,7 @@ public class Coder {
         Arrays.fill(prev, -1);
         Arrays.fill(dist, INF);
 
-        dist[start] = 0;
+        dist[0] = 0;
 
         while (true) {
             int v = -1;
@@ -146,7 +189,7 @@ public class Coder {
         int min = dist[dist.length - 1];
         int index = dist.length - 1;
 
-        for (int i = 2; i <= 2; i++) {
+        for (int i = 2; i <= pow(2, memoryLength); i++) {
             if (dist[dist.length - i] < min) {
                 min = dist[dist.length - i];
                 index = dist.length - i;
@@ -157,13 +200,7 @@ public class Coder {
             stack.add(v);
         }
 
-        final int[] path = new int[stack.size()];
-
-        for (int i = 0; i < path.length; i++) {
-            path[i] = stack.get(stack.size() - (i + 1));
-        }
-
-        return path;
+        return stack;
     }
 
     private List<Integer> countPolynomial(

@@ -10,13 +10,13 @@ import static java.util.Collections.max;
 public class Main {
 
     public static void main(String[] args) {
-        final List<Integer> polynomial1 = Arrays.asList(0, 1);
-        final List<Integer> polynomial2 = Arrays.asList(0);
+        final List<Integer> polynomial1 = Arrays.asList(0);
+        final List<Integer> polynomial2 = Arrays.asList(0, 1, 2);
 
         final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
 
-        smallTest(polynomial1, polynomial2, memoryLength);
-//        bigTest(polynomial1, polynomial2, memoryLength, 10, 10, true);
+//        smallTest(polynomial1, polynomial2, memoryLength);
+        bigTest(polynomial1, polynomial2, memoryLength, 20, 20, true);
     }
 
     public static void smallTest(
@@ -31,10 +31,9 @@ public class Main {
             return;
         }
 
-        final List<Integer> list = Arrays.asList(1, 1, 0, 1, 0, 1);
-//        final List<Integer> list = Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1);
+        final List<Integer> list = Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1);
 
-//        consoleView.print(coder.getStatesMap(), memoryLength);
+        consoleView.print(coder.getStatesMap(), memoryLength);
 
         System.out.print("Sequence: ");
         System.out.println(list);
@@ -43,11 +42,13 @@ public class Main {
         System.out.print("Encoded:  ");
         System.out.println(encoded);
 
-        encoded.get(2).set(0, 1);
-        System.out.print("Encoded:  ");
-        System.out.println(encoded);
+//        encoded.get(2).set(0, 1);
+//        encoded.get(5).set(1, 1);
+//        encoded.get(6).set(1, 1);
+//        System.out.print("Encoded:  ");
+//        System.out.println(encoded);
 
-        final List<Integer> decoded = coder.decode(encoded);
+        final List<Integer> decoded = coder.decode(encoded, memoryLength);
         System.out.print("Decoded:  ");
         System.out.println(decoded);
         System.out.println();
@@ -69,8 +70,6 @@ public class Main {
             return;
         }
 
-        consoleView.print(coder.getStatesMap(), memoryLength);
-
         final double start = System.currentTimeMillis();
 
         for (int i = 0; i < iterations; i++) {
@@ -91,7 +90,7 @@ public class Main {
             }
 
             final List<List<Integer>> encoded = coder.encode(list, memoryLength);
-            final List<Integer> decoded = coder.decode(encoded);
+            final List<Integer> decoded = coder.decode(encoded, memoryLength);
 
             if (visualize) {
                 System.out.println(encoded);
