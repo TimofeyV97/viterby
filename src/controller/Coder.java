@@ -143,10 +143,23 @@ public class Coder {
             return encoded;
         }
 
-        final List<List<Integer>> noised = new ArrayList<>(encoded);
-        final int ratio = 100 / SNR;
+        final double prob = (100. / SNR) / 100;
+        final ArrayList<List<Integer>> noised = new ArrayList<>();
 
-        noised.addAll(encoded);
+        encoded.forEach(word -> {
+            final ArrayList<Integer> noisedWord = new ArrayList<>();
+
+            word.forEach(bit -> {
+                if (Math.random() <= prob) {
+                    noisedWord.add(bit == 1 ? 0 : 1);
+                } else {
+                    noisedWord.add(bit);
+                }
+            });
+
+            noised.add(noisedWord);
+        });
+
         return noised;
     }
 
