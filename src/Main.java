@@ -13,15 +13,15 @@ import static java.util.Collections.max;
 public class Main {
 
     public static void main(String[] args) {
-        final List<Integer> polynomial1 = Arrays.asList(0);
+        final List<Integer> polynomial1 = Arrays.asList(0, 2);
         final List<Integer> polynomial2 = Arrays.asList(0, 1, 2);
-        final int SNR = 1;
+        final int SNRDb = 4;
 
         final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
 
-//        smallTest(polynomial1, polynomial2, SNR, memoryLength);
-//		System.out.println(bigTest(polynomial1, polynomial2, SNR, memoryLength, 50, 100, false));
-        graphicTest(polynomial1, polynomial2, memoryLength, 100, 50, false);
+//        smallTest(polynomial1, polynomial2, SNRDb, memoryLength);
+//		System.out.println(bigTest(polynomial1, polynomial2, SNRDb, memoryLength, 10000, 100, false));
+        graphicTest(polynomial1, polynomial2, memoryLength, 1000, 50, false);
     }
 
     public static void smallTest(
@@ -35,7 +35,7 @@ public class Main {
         final ConsoleView consoleView = new ConsoleView();
         final Coder coder = new Coder(polynomial1, polynomial2, memoryLength);
 
-        final List<Integer> sequence = Arrays.asList(0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1);
+        final List<Integer> sequence = Arrays.asList(0, 0, 0, 1, 1, 0, 0, 0);
 
         consoleView.print(coder.getStatesMap(), memoryLength);
 
@@ -59,7 +59,7 @@ public class Main {
     public static double bigTest(
             final List<Integer> polynomial1,
             final List<Integer> polynomial2,
-            final int SNR,
+            final double SNRDb,
             final int memoryLength,
             final int iterations,
             final int codeLength,
@@ -95,7 +95,7 @@ public class Main {
                 System.out.println(encoded);
             }
 
-            encoded = coder.noise(SNR, encoded);
+            encoded = coder.noise(SNRDb, encoded);
 
             if (visualize) {
                 System.out.print("Encoded with errors:  ");
@@ -130,12 +130,13 @@ public class Main {
         final XYSeries series = new XYSeries("dependency");
         double errorProbability;
 
-        for (int SNR = 1; SNR <= 100; SNR++) {
-            errorProbability = bigTest(polynomial1, polynomial2, SNR, memoryLength, iterations, codeLength, visualize);
-            series.add(errorProbability, SNR);
+        for (int i = 0; i <= 6; i++) {
+            double SNRDb = Math.pow(2, i);
+            errorProbability = bigTest(polynomial1, polynomial2, SNRDb, memoryLength, iterations, codeLength, visualize);
+            series.add(errorProbability, SNRDb);
         }
 
-        final Plot plot = new Plot("PSNR/Message length", series);
+        final Plot plot = new Plot("SNR/Error dependency", series);
 
         plot.setSize(900, 400);
         plot.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -146,17 +147,13 @@ public class Main {
             final List<Integer> polynomial1,
             final List<Integer> polynomial2
     ) {
-        if (polynomial1.size() > 1 && polynomial2.size() > 1) {
-            throw new RuntimeException("One of polynomials max degree is not 0");
-        }
-
-        if (polynomial1.size() == 1 && polynomial2.size() == 1) {
+        if (polynomial1.size() <= 1 || polynomial2.size() <= 1) {
             throw new RuntimeException("Incorrect polynomials length");
         }
 
-        if (max(polynomial1) > 2 || max(polynomial2) > 2) {
-            throw new RuntimeException("One of polynomials max degree is more than 2");
-        }
+//		if (max(polynomial1) > 2 || max(polynomial2) > 2) {
+//			throw new RuntimeException("One of polynomials max degree is more than 2");
+//		}
     }
 
     private static int countDifference(final List<Integer> inputSeq, final List<Integer> outputSeq) {

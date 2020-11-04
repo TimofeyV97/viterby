@@ -1,10 +1,12 @@
 package controller;
 
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -15,27 +17,16 @@ public class Plot extends JFrame {
     public Plot(final String title, final XYSeries series) {
         super(title);
 
-        final XYDataset dataset = createDataset(series);
-        final JFreeChart chart = ChartFactory.createXYLineChart(
-                "SNR/Error probability",
-                "Error probability",
-                "SNR value",
-                dataset,
-                PlotOrientation.HORIZONTAL,
-                true,
-                true,
-                false
-        );
+        final NumberAxis xAxis = new NumberAxis("Errors part");
+        final LogAxis yAxis = new LogAxis("SNR (Db)");
+
+        yAxis.setBase(2);
+        yAxis.setTickUnit(new NumberTickUnit(1));
+
+        final XYPlot plot = new XYPlot(new XYSeriesCollection(series), xAxis, yAxis, new XYLineAndShapeRenderer(true, false));
+        final JFreeChart chart = new JFreeChart("SNR/Error dependency", JFreeChart.DEFAULT_TITLE_FONT, plot, false);
 
         setContentPane(new ChartPanel(chart));
     }
-
-    private XYDataset createDataset(final XYSeries series) {
-        final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
-
-        return dataset;
-    }
-
 
 }

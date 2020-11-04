@@ -138,11 +138,12 @@ public class Coder {
         return decoded;
     }
 
-    public List<List<Integer>> noise(final int SNR, final List<List<Integer>>  encoded) {
-        if (SNR <= 0) {
+    public List<List<Integer>> noise(final double SNRDb, final List<List<Integer>>  encoded) {
+        if (SNRDb <= 0) {
             return encoded;
         }
 
+        final double SNR = Math.pow(10, SNRDb / 10);
         final double prob = (100. / SNR) / 100;
         final ArrayList<List<Integer>> noised = new ArrayList<>();
 
@@ -224,27 +225,20 @@ public class Coder {
             int incomingBit
     ) {
         final List<Integer> output = new ArrayList<>();
-        final int firstPolynomialDegree = polynomial1.get(0);
-        final int secondPolynomialDegree = polynomial2.get(0);
         int sum = 0;
 
-        if (polynomial1.size() == 1) {
-            output.add(firstPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - firstPolynomialDegree));
-
-            for (final int degree : polynomial2) {
-                sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
-            }
-
-            output.add(sum);
-        } else if (polynomial2.size() == 1) {
-            for (final int degree : polynomial1) {
-                sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
-            }
-
-            output.add(sum);
-
-            output.add(secondPolynomialDegree == 0 ? incomingBit : getBit(memory, memoryLength - secondPolynomialDegree));
+        for (final int degree : polynomial1) {
+            sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
         }
+
+        output.add(sum);
+        sum = 0;
+
+        for (final int degree : polynomial2) {
+            sum ^= degree == 0 ? incomingBit : getBit(memory, memoryLength - degree);
+        }
+
+        output.add(sum);
 
         return output;
     }
