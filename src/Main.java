@@ -14,14 +14,14 @@ public class Main {
 
     public static void main(String[] args) {
         final List<Integer> polynomial1 = Arrays.asList(0, 2);
-        final List<Integer> polynomial2 = Arrays.asList(0, 1, 2);
-        final int SNRDb = 4;
+        final List<Integer> polynomial2 = Arrays.asList(0, 1, 2, 3);
+        final int SNRDb = 10;
 
         final int memoryLength = max(Arrays.asList(max(polynomial1), max(polynomial2)));
 
 //        smallTest(polynomial1, polynomial2, SNRDb, memoryLength);
-//		System.out.println(bigTest(polynomial1, polynomial2, SNRDb, memoryLength, 10000, 100, false));
-        graphicTest(polynomial1, polynomial2, memoryLength, 1000, 50, false);
+        System.out.println(bigTest(polynomial1, polynomial2, SNRDb, memoryLength, 10000, 50, false));
+//        graphicTest(polynomial1, polynomial2, memoryLength, 1000, 50, false);
     }
 
     public static void smallTest(
@@ -150,10 +150,6 @@ public class Main {
         if (polynomial1.size() <= 1 || polynomial2.size() <= 1) {
             throw new RuntimeException("Incorrect polynomials length");
         }
-
-//		if (max(polynomial1) > 2 || max(polynomial2) > 2) {
-//			throw new RuntimeException("One of polynomials max degree is more than 2");
-//		}
     }
 
     private static int countDifference(final List<Integer> inputSeq, final List<Integer> outputSeq) {

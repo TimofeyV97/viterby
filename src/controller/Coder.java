@@ -82,7 +82,7 @@ public class Coder {
                     index++;
                 }
             }
-        } else {
+        } else if (memoryLength == 2) {
             vertexNum = (codeSequence.size() * 4) + 4;
             graph = new Graph(vertexNum);
             List<Integer> word = codeSequence.get(0);
@@ -122,6 +122,81 @@ public class Coder {
                 for (int j = 2; j <= 3; j++) {
                     graph.addEdge(index, ((i + 1) * 4) + 1, calcHammingDistance(statesMap.get(j).get(0), word));
                     graph.addEdge(index, ((i + 1) * 4 + 2) + 1,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+            }
+        } else {
+            vertexNum = (codeSequence.size() * 8) + 8;
+            graph = new Graph(vertexNum);
+            List<Integer> word = codeSequence.get(0);
+
+            for (int i = 1; i <= 4; i++) {
+                graph.addVertex("t" + i + "_0", 0);
+                graph.addVertex("t" + i + "_1", 0);
+                graph.addVertex("t" + i + "_2", 0);
+                graph.addVertex("t" + i + "_3", 0);
+                graph.addVertex("t" + i + "_4", 1);
+                graph.addVertex("t" + i + "_5", 1);
+                graph.addVertex("t" + i + "_6", 1);
+                graph.addVertex("t" + i + "_7", 1);
+            }
+
+            graph.addEdge(index, 8, calcHammingDistance(statesMap.get(0).get(0), word));
+            graph.addEdge(index, 12,  calcHammingDistance(statesMap.get(0).get(1), word));
+
+            word = codeSequence.get(1);
+            index = 8;
+            graph.addEdge(index, 16, calcHammingDistance(statesMap.get(0).get(0), word));
+            graph.addEdge(index, 20,  calcHammingDistance(statesMap.get(0).get(1), word));
+            index = 12;
+            graph.addEdge(index, 18, calcHammingDistance(statesMap.get(4).get(0), word));
+            graph.addEdge(index, 22,  calcHammingDistance(statesMap.get(4).get(1), word));
+            index = 16;
+            graph.addEdge(index, 24, calcHammingDistance(statesMap.get(0).get(0), word));
+            graph.addEdge(index, 28,  calcHammingDistance(statesMap.get(0).get(1), word));
+            index = 18;
+            graph.addEdge(index, 25,  calcHammingDistance(statesMap.get(2).get(0), word));
+            graph.addEdge(index, 29,  calcHammingDistance(statesMap.get(2).get(1), word));
+            index = 20;
+            graph.addEdge(index, 26,  calcHammingDistance(statesMap.get(4).get(0), word));
+            graph.addEdge(index, 30,  calcHammingDistance(statesMap.get(4).get(1), word));
+            index = 22;
+            graph.addEdge(index, 27,  calcHammingDistance(statesMap.get(6).get(0), word));
+            graph.addEdge(index, 31,  calcHammingDistance(statesMap.get(6).get(1), word));
+            index = 24;
+
+            for (int i = 3; i < codeSequence.size(); i++) {
+                word = codeSequence.get(i);
+                graph.addVertex("t" + (i + 2) + "_0", 0);
+                graph.addVertex("t" + (i + 2) + "_1", 0);
+                graph.addVertex("t" + (i + 2) + "_2", 0);
+                graph.addVertex("t" + (i + 2) + "_3", 0);
+                graph.addVertex("t" + (i + 2) + "_4", 1);
+                graph.addVertex("t" + (i + 2) + "_5", 1);
+                graph.addVertex("t" + (i + 2) + "_6", 1);
+                graph.addVertex("t" + (i + 2) + "_7", 1);
+
+                for (int j = 0; j <= 1; j++) {
+                    graph.addEdge(index, (i + 1) * 8, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, (i + 1) * 8 + 4,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+
+                for (int j = 2; j <= 3; j++) {
+                    graph.addEdge(index, ((i + 1) * 8) + 1, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, ((i + 1) * 8 + 4) + 1,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+
+                for (int j = 4; j <= 5; j++) {
+                    graph.addEdge(index, ((i + 1) * 8) + 2, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, ((i + 1) * 8 + 4) + 2,  calcHammingDistance(statesMap.get(j).get(1), word));
+                    index++;
+                }
+
+                for (int j = 6; j <= 7; j++) {
+                    graph.addEdge(index, ((i + 1) * 8) + 3, calcHammingDistance(statesMap.get(j).get(0), word));
+                    graph.addEdge(index, ((i + 1) * 8 + 4) + 3,  calcHammingDistance(statesMap.get(j).get(1), word));
                     index++;
                 }
             }
@@ -200,15 +275,7 @@ public class Coder {
             }
         }
 
-        int min = dist[dist.length - 1];
-        int index = dist.length - 1;
-
-        for (int i = 2; i <= pow(2, memoryLength); i++) {
-            if (dist[dist.length - i] < min) {
-                min = dist[dist.length - i];
-                index = dist.length - i;
-            }
-        }
+        int index = dist.length - ((int) pow(2, memoryLength));
 
         for (int v = index; v != -1; v = prev[v]) {
             stack.add(v);
